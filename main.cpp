@@ -1,10 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <string>
 using namespace std;
 
 class TicTacToe {
     vector<vector<char>> board;
     char currentPlayer;
+    string playerXName;
+    string playerOName;
 
 public:
     TicTacToe() : board(3, vector<char>(3, ' ')), currentPlayer('X') {}
@@ -12,6 +15,12 @@ public:
     void initializeGame() {
         for (auto& row : board)
             fill(row.begin(), row.end(), ' ');
+
+        cout << "Enter name for Player X: ";
+        cin >> playerXName;
+        cout << "Enter name for Player O: ";
+        cin >> playerOName;
+
         currentPlayer = 'X';
     }
 
@@ -64,8 +73,12 @@ public:
         currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
     }
 
-    char getCurrentPlayer() const {
+    char getCurrentPlayerSymbol() const {
         return currentPlayer;
+    }
+
+    string getCurrentPlayerName() const {
+        return (currentPlayer == 'X') ? playerXName : playerOName;
     }
 };
 
@@ -73,12 +86,12 @@ void playGame() {
     TicTacToe game;
     game.initializeGame();
 
-    cout << "Welcome to Tic Tac Toe!\nPlayer X goes first.\n";
+    cout << "Welcome to Tic Tac Toe!\n";
     game.displayBoard();
 
     while (true) {
         int row, col;
-        cout << "Player " << game.getCurrentPlayer() << "'s turn.\n";
+        cout << game.getCurrentPlayerName() << "'s turn (" << game.getCurrentPlayerSymbol() << ").\n";
         cout << "Enter your move (row and column, 1-3): ";
         cin >> row >> col;
 
@@ -92,7 +105,7 @@ void playGame() {
         if (game.makeMove(row - 1, col - 1)) {
             game.displayBoard();
             if (game.checkWin()) {
-                cout << "Player " << game.getCurrentPlayer() << " wins!\n";
+                cout << game.getCurrentPlayerName() << " wins!\n";
                 break;
             }
             if (game.checkDraw()) {
