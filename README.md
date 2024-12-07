@@ -1,5 +1,5 @@
 # tictactoe-cpp
-Simple tic-tac-toe game in C++ Language
+Simple <a href="https://github.com/rauanseidaly/tictactoe-cpp">tic-tac-toe game</a> in C++ Language
 
 <h1> <b> Project Structure: </b> </h1>
 <h6> Class TicTacToe: </h6>
