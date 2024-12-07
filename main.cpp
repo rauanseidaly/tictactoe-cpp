@@ -2,22 +2,24 @@
 #include <vector>
 using namespace std;
 
-enum class Player { None, X, O };
-
 class TicTacToe {
-    vector<vector<Player>> board;
-    Player currentPlayer;
-    bool gameWon;
+    vector<vector<char>> board;
+    char currentPlayer;
 
 public:
-    TicTacToe() : board(3, vector<Player>(3, Player::None)), currentPlayer(Player::X), gameWon(false) {}
+    TicTacToe() : board(3, vector<char>(3, ' ')), currentPlayer('X') {}
 
-    void displayBoard() const {
+    void initializeGame() {
+        for (auto& row : board)
+            fill(row.begin(), row.end(), ' ');
+        currentPlayer = 'X';
+    }
+
+    void displayBoard() {
         cout << "\nCurrent Board:\n";
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                char symbol = getSymbol(board[i][j]);
-                cout << " " << symbol << " ";
+                cout << " " << board[i][j] << " ";
                 if (j < 2) cout << "|";
             }
             cout << endl;
@@ -26,86 +28,92 @@ public:
     }
 
     bool makeMove(int row, int col) {
-        if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != Player::None || gameWon)
+        if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
+            cout << "Invalid move. Try again.\n";
             return false;
-
+        }
         board[row][col] = currentPlayer;
-        if (checkWin(row, col)) {
-            gameWon = true;
-        } else {
-            currentPlayer = (currentPlayer == Player::X) ? Player::O : Player::X;
+        return true;
+    }
+
+    bool checkWin() {
+        for (int i = 0; i < 3; ++i) {
+            // Check rows and columns
+            if ((board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) ||
+                (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer))
+                return true;
+        }
+        // Check diagonals
+        if ((board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) ||
+            (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer))
+            return true;
+
+        return false;
+    }
+
+    bool checkDraw() {
+        for (const auto& row : board) {
+            for (char cell : row) {
+                if (cell == ' ') return false;
+            }
         }
         return true;
     }
 
-    bool isGameOver() const {
-        if (gameWon) {
-            cout << "Player " << (currentPlayer == Player::X ? "X" : "O") << " wins!\n";
-            return true;
-        }
-        if (isDraw()) {
-            cout << "It's a draw!\n";
-            return true;
-        }
-        return false;
+    void switchPlayer() {
+        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
     }
 
-    void reset() {
-        board = vector<vector<Player>>(3, vector<Player>(3, Player::None));
-        currentPlayer = Player::X;
-        gameWon = false;
-    }
-
-    Player getCurrentPlayer() const { return currentPlayer; }
-
-private:
-    char getSymbol(Player player) const {
-        switch (player) {
-            case Player::X: return 'X';
-            case Player::O: return 'O';
-            default: return ' ';
-        }
-    }
-
-    bool checkWin(int row, int col) {
-        Player p = board[row][col];
-        // Check row, column, and diagonals
-        return (board[row][0] == p && board[row][1] == p && board[row][2] == p) ||
-               (board[0][col] == p && board[1][col] == p && board[2][col] == p) ||
-               (row == col && board[0][0] == p && board[1][1] == p && board[2][2] == p) ||
-               (row + col == 2 && board[0][2] == p && board[1][1] == p && board[2][0] == p);
-    }
-
-    bool isDraw() const {
-        for (const auto& row : board) {
-            for (const auto& cell : row) {
-                if (cell == Player::None) return false;
-            }
-        }
-        return !gameWon;
+    char getCurrentPlayer() const {
+        return currentPlayer;
     }
 };
 
-int main() {
+void playGame() {
     TicTacToe game;
-    int row, col;
+    game.initializeGame();
 
-    cout << "Welcome to Tic Tac Toe!\n";
-    cout << "Player X goes first.\n";
+    cout << "Welcome to Tic Tac Toe!\nPlayer X goes first.\n";
     game.displayBoard();
 
-    while (!game.isGameOver()) {
-        cout << "Player " << (game.getCurrentPlayer() == Player::X ? "X" : "O") << "'s turn.\n";
+    while (true) {
+        int row, col;
+        cout << "Player " << game.getCurrentPlayer() << "'s turn.\n";
         cout << "Enter your move (row and column, 1-3): ";
         cin >> row >> col;
 
+        if (!cin || row < 1 || row > 3 || col < 1 || col > 3) {
+            cout << "Invalid input. Please enter numbers between 1 and 3.\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
         if (game.makeMove(row - 1, col - 1)) {
             game.displayBoard();
-        } else {
-            cout << "Invalid move. Try again.\n";
+            if (game.checkWin()) {
+                cout << "Player " << game.getCurrentPlayer() << " wins!\n";
+                break;
+            }
+            if (game.checkDraw()) {
+                cout << "It's a draw!\n";
+                break;
+            }
+            game.switchPlayer();
         }
     }
 
-    cout << "Game over! Thanks for playing.\n";
+    char choice;
+    cout << "Would you like to play again? (y/n): ";
+    cin >> choice;
+    if (choice == 'y' || choice == 'Y') {
+        playGame();
+    } else {
+        cout << "Thanks for playing!\n";
+    }
+}
+
+int main() {
+    playGame();
     return 0;
 }
